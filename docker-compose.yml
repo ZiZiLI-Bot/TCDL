@@ -11,6 +11,9 @@ services:
       - VIRTUAL_HOST=tcdlbe.tuanhung.site
       - VIRTUAL_PORT=4000
       - LETSENCRYPT_HOST=tcdlbe.tuanhung.site
+      - PORT_TCDL = 4000;
+      - DB_URL_TCDL = mongodb://TuanHung:Hung532002@103.14.48.14:3701/Medicine?authMechanism=DEFAULT;
+      - HOSTNAME = https://tcdlbe.tuanhung.site;
 
   FE_TCDL:
     image: hungwap375/mystore:FE_TCDL
@@ -22,3 +25,4 @@ services:
       - VIRTUAL_HOST=tcdl.tuanhung.site
       - VIRTUAL_PORT=5000
       - LETSENCRYPT_HOST=tcdl.tuanhung.site
+      - VITE_BACKEND_URL = https://tcdlbe.tuanhung.site/api/;
