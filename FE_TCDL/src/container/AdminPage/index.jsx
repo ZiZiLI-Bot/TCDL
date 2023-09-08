@@ -4,7 +4,7 @@ import React, { startTransition, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TurndownService from 'turndown';
-import axiosClient from '../../helpers/API/axiosClient';
+import axiosClient from '../../helpers/axiosClient';
 import DataTestCoYemLaBong from '../../constants/TestAPI';
 
 const turndownService = new TurndownService();

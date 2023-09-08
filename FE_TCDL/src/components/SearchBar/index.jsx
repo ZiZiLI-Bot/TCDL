@@ -1,65 +1,92 @@
-/* eslint-disable react/no-children-prop */
-/* eslint-disable react/prop-types */
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
+  Button,
   Card,
   CardBody,
+  CardFooter,
+  Center,
+  Divider,
+  Flex,
+  HStack,
+  Heading,
+  Image,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
-  Progress,
+  Kbd,
+  Modal,
+  ModalContent,
+  ModalOverlay,
+  Spacer,
+  Spinner,
   Stack,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import _ from 'lodash';
-import Markdown from 'markdown-to-jsx';
-import React, { startTransition, useRef, useState } from 'react';
-import { BsArrowReturnRight, BsSearch, BsXCircle } from 'react-icons/bs';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import React, { startTransition, useContext, useEffect, useState } from 'react';
+import { BsArrowReturnRight, BsFileEarmarkText, BsSearch, BsTrash, BsStar, BsStarFill } from 'react-icons/bs';
+import { MdSearchOff } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../../helpers/API/axiosClient';
-import { BoxFrame } from '../FrameMotion';
+import ImageLoading from '../../assets/Image_Loading.svg';
+import { OpenSearchContext } from '../../contexts/Search.context';
+import axiosClient from '../../helpers/axiosClient';
+import convertToUnsigned from '../../helpers/convertToUnsigned';
+import MarkdownRender from '../MarkDownRender';
 
-function convertToUnsigned(str) {
-  const from = 'àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệđìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ';
-  const to = 'aaaaaaaaaaaaaaaaaeeeeeeeeeeediiiiiooooooooooooooooouuuuuuuuuuuyyyyy';
-  let result = '';
-  for (let i = 0; i < str.length; i++) {
-    let charIndex = from.indexOf(str[i]);
-    if (charIndex !== -1) {
-      result += to[charIndex];
-    } else {
-      result += str[i];
+export default function SearchBar({ h }) {
+  const { openSearch, setOpenSearch } = useContext(OpenSearchContext);
+  const onClose = () => setOpenSearch(false);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setOpenSearch(true);
     }
-  }
-  return result;
+  };
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+  return (
+    <Flex
+      px={10}
+      alignItems='center'
+      minW='670px'
+      h={h}
+      border='2px'
+      borderColor='gray.600'
+      borderRadius={12}
+      cursor='text'
+      onClick={() => setOpenSearch(true)}
+    >
+      <Flex w='full' alignItems='center' justifyContent='space-between'>
+        <BsSearch size={20} color='#838096' />
+        <Text ml={4} color='gray.500'>
+          Tìm kiếm:
+        </Text>
+        <Spacer />
+        <Kbd h={6}>ENTER</Kbd>
+      </Flex>
+      <SearchModal onClose={onClose} isOpen={openSearch} />
+    </Flex>
+  );
 }
 
-export default function SearchBar({ size }) {
+const SearchModal = ({ onClose, isOpen }) => {
   const [dataSearch, setDataSearch] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef();
   const navigation = useNavigate();
 
-  const clearSearch = () => {
-    inputRef.current.value = '';
-    setInputValue('');
-    setDataSearch([]);
-  };
-
-  const redirect = (slug) => {
-    inputRef.current.value = '';
-    setInputValue('');
-    setDataSearch([]);
+  const handlerNavigate = (slug) => {
+    onClose();
     navigation(`/medicine/${slug}`);
   };
 
   const handlerSearch = _.debounce((e) => {
     startTransition(() => {
-      setInputValue(e.target.value);
       const fetchData = async () => {
         setLoading(true);
         if (e.target.value !== '') {
@@ -73,89 +100,131 @@ export default function SearchBar({ size }) {
       };
       fetchData();
     });
-  }, 500);
-
+  }, 400);
   return (
-    <Box zIndex={10} pos='relative' minW='680px'>
-      <InputGroup size='md'>
-        <Input
-          ref={inputRef}
-          pr='4.5rem'
-          pl='2.5rem'
-          placeholder='Tìm kiếm: ... (VD: Bạch chỉ, Angelica dahurica, ...)'
-          onChange={(e) => handlerSearch(e)}
-          autoComplete='off'
-          size={size}
-          _placeholder={size ? { opacity: 1, color: 'gray.500' } : { opacity: 0.5, color: 'gray.500' }}
-          borderColor={size ? 'gray.500' : 'gray.400'}
-        />
-        {inputValue !== '' && (
-          <InputLeftElement
-            mt={size ? 1 : 0}
-            cursor='pointer'
-            onClick={clearSearch}
-            children={<BsXCircle color='gray.300' />}
-          />
-        )}
-        <InputRightElement mt={size ? 1 : 0} width='4.5rem' cursor='pointer' onClick={() => console.log(dataSearch)}>
-          <BsSearch />
-        </InputRightElement>
-      </InputGroup>
-      {loading && <Progress mt={1} size='xs' isIndeterminate />}
-      <BoxFrame
-        pos='absolute'
-        rounded='md'
-        zIndex={100}
-        overflow='auto'
-        maxH={620}
-        mt={6}
-        w='full'
-        h={28}
-        layout
-        boxShadow='0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)'
-        bg='#FBFBFB'
-        initial={{
-          height: 0,
-          opacity: 0,
-        }}
-        animate={{
-          height: 'auto',
-          opacity: 1,
-        }}
-        exit={{
-          height: 0,
-          opacity: 0,
-        }}
-      >
-        {dataSearch.length !== 0 &&
-          dataSearch.map((item) => <ItemSearch redirect={redirect} key={item.id} data={item} />)}
-      </BoxFrame>
-    </Box>
-  );
-}
-
-const ItemSearch = ({ data, redirect }) => {
-  const { DuocLieu, HinhAnh, Slug, TenKhoaHoc } = data;
-  return (
-    <Card onClick={() => redirect(Slug)} mx={2} my={3} minH='128px' direction='row' overflow='hidden' cursor='pointer'>
-      <LazyLoadImage
-        
-        style={{ borderRadius: 10, width: '25%', objectFit: 'cover', maxHeight: '165px' }}
-        src={HinhAnh[0].image}
-      />
-      <Stack ml='10px'>
-        <CardBody>
-          <Text fontSize='3xl' fontWeight='bold'>
-            {DuocLieu}
-          </Text>
-          <Text fontStyle='italic' maxW='400px' noOfLines={2}>
-            <Markdown>{TenKhoaHoc}</Markdown>
-          </Text>
-        </CardBody>
-      </Stack>
-      <Box pos='absolute' right={8} bottom='38%'>
-        <BsArrowReturnRight size={22} />
-      </Box>
-    </Card>
+    <Modal size='3xl' isCentered onClose={onClose} isOpen={isOpen}>
+      <ModalOverlay />
+      <ModalContent overflow='hidden'>
+        <Box p={1} px={2}>
+          <InputGroup>
+            <InputLeftElement pointerEvents='none'>
+              <BsSearch color='#838096' size={16} style={{ marginTop: 10 }} />
+            </InputLeftElement>
+            <Input
+              border='none'
+              focusBorderColor='white'
+              fontSize={17}
+              size='lg'
+              placeholder='Tìm kiếm ... (VD: Bạch chỉ, Angelica dahurica, ...)'
+              onFocus
+              onChange={handlerSearch}
+            />
+            <InputRightElement mt={2} mr={4}>
+              <Kbd h={6}>ESC</Kbd>
+            </InputRightElement>
+          </InputGroup>
+        </Box>
+        <Divider mt={2} />
+        <Box w='full' h='78vh'>
+          <Box className='flex space-x-3' h='full'>
+            {/* <Box w='20%' m={3} color={'GrayText'}>
+              <Text fontWeight='bold' mb={2} ml={4}>
+                Lịch sử:
+              </Text>
+              <VStack alignItems='start' w='full'>
+                <Flex className='group/item w-full py-2 px-4 rounded-full items-center justify-between hover:bg-gray-100 cursor-pointer'>
+                  <HStack spacing={3}>
+                    <BsFileEarmarkText fontSize={18} />
+                    <Text>ABC</Text>
+                  </HStack>
+                  <BsTrash
+                    size={26}
+                    className='group/edit p-1 rounded-md invisible hover:bg-slate-200 group-hover/item:visible'
+                  />
+                </Flex>
+              </VStack>
+            </Box> */}
+            <Box flex='1' color='black' className='overflow-y-auto'>
+              {loading ? (
+                <Center h='full' w='full'>
+                  <Spinner color='blue' />
+                </Center>
+              ) : (
+                <>
+                  {dataSearch?.length !== 0 ? (
+                    <>
+                      {dataSearch?.map((item) => (
+                        <Card
+                          key={item._id}
+                          bg='gray.50'
+                          direction={{ base: 'column', sm: 'row' }}
+                          maxH='200px'
+                          overflow='hidden'
+                          variant='elevated'
+                          my={3}
+                          px={3}
+                        >
+                          <Image
+                            objectFit='cover'
+                            borderRadius={6}
+                            maxW={{ base: '100%', sm: '30%' }}
+                            src={item.HinhAnh[0].image}
+                            fallbackSrc={ImageLoading}
+                          />
+                          <Stack w='full'>
+                            <CardBody px={6} py={3} w='full'>
+                              <Heading size='lg'>{item.DuocLieu}</Heading>
+                              <Text noOfLines={2}>
+                                <MarkdownRender>{item.TenKhoaHoc}</MarkdownRender>
+                              </Text>
+                            </CardBody>
+                            <CardFooter p={2} justifyContent='end' alignItems='center'>
+                              <BsStar size={20} className='mr-3 hover:text-yellow-500 cursor-pointer' />
+                              <Button
+                                size='sm'
+                                rightIcon={<BsArrowReturnRight size={16} />}
+                                colorScheme='teal'
+                                variant='outline'
+                                onClick={() => handlerNavigate(item.Slug)}
+                              >
+                                Chi tiết
+                              </Button>
+                            </CardFooter>
+                          </Stack>
+                        </Card>
+                      ))}
+                    </>
+                  ) : (
+                    <Center w='full' h='full'>
+                      <VStack>
+                        <MdSearchOff size={100} color='#737374' />
+                        <Text color='GrayText'>Result Empty</Text>
+                      </VStack>
+                    </Center>
+                  )}
+                </>
+              )}
+            </Box>
+            {/* <Box w='20%' m={3} color={'GrayText'}>
+              <Text fontWeight='bold' mb={2} ml={4}>
+                Follow:
+              </Text>
+              <VStack alignItems='start' w='full'>
+                <Flex className='group/item w-full py-2 px-4 rounded-full items-center justify-between hover:bg-gray-100 cursor-pointer'>
+                  <HStack spacing={3}>
+                    <BsStarFill fontSize={18} color='#ffcc3f' />
+                    <Text>ABC</Text>
+                  </HStack>
+                  <BsTrash
+                    size={26}
+                    className='group/edit p-1 rounded-md invisible hover:bg-slate-200 group-hover/item:visible'
+                  />
+                </Flex>
+              </VStack>
+            </Box> */}
+          </Box>
+        </Box>
+      </ModalContent>
+    </Modal>
   );
 };

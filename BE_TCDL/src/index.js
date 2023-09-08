@@ -7,6 +7,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import router from './routers';
 import cors from 'cors';
+import helmet from 'helmet';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,6 +20,12 @@ const post = 4000;
 const app = express();
 app.use(logger('dev'));
 app.use(cors());
+app.disable('x-powered-by');
+app.use(
+  helmet({
+    xPoweredBy: false,
+  }),
+);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public/uploads'));

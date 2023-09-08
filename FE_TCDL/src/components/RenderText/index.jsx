@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { BsCaretDownFill } from 'react-icons/bs';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import { BoxFrame } from '../FrameMotion';
+import { motion } from 'framer-motion';
 import MarkdownRender, { RenderMarkdownRawText } from '../MarkDownRender';
 
 const sortIndex = (arr) => _.sortBy(arr, (o) => o.index);
@@ -29,7 +29,7 @@ const convert = (text, dataReferences) => {
 export function RenderText({ title, text, inherit, thamKhao }) {
   return (
     <Box className='TextInline'>
-      <Text fontWeight='bold' color='red' fontStyle={inherit ? 'inherit' : 'unset'}>
+      <Text id={title} fontWeight='bold' color='red' fontStyle={inherit ? 'inherit' : 'unset'}>
         • {title}:{' '}
       </Text>{' '}
       {}
@@ -52,7 +52,7 @@ export function RenderTextHide({ title, text, image, dotTitle, noMarginTop, tham
       >
         {title ? (
           <Box className='TextInline'>
-            <Text fontSize={19.5} fontWeight='bold' color='red'>
+            <Text id={title} fontSize={19.5} fontWeight='bold' color='red'>
               {dotTitle ?? '•'} {title}
               {text ? ':' : '.'}
             </Text>{' '}
@@ -66,30 +66,27 @@ export function RenderTextHide({ title, text, image, dotTitle, noMarginTop, tham
           <Divider />
         )}
         {(text || image?.length !== 0) && (
-          <BoxFrame
+          <motion.div
             px={3}
             display='flex'
             alignItems='center'
             justifyContent='center'
+            transition={{ type: 'spring' }}
             animate={{ rotate: hide ? 180 : 0 }}
           >
             <BsCaretDownFill style={{ marginRight: 10 }} />
-          </BoxFrame>
+          </motion.div>
         )}
       </Flex>
 
       {(text || image?.length !== 0) && (
-        <BoxFrame
+        <motion.div
           layout
           initial={false}
           transition={{ duration: 0.2 }}
           animate={{
             height: 'auto',
             opacity: 1,
-          }}
-          exit={{
-            height: 0,
-            opacity: 0,
           }}
         >
           {!hide ? (
@@ -105,12 +102,7 @@ export function RenderTextHide({ title, text, image, dotTitle, noMarginTop, tham
               {image?.length !== 0 && (
                 <>
                   {image?.length <= 1 ? (
-                    <LazyLoadImage
-                      style={{ maxWidth: '500px', maxHeight: '750px' }}
-                      alt={text}
-                      effect='blur'
-                      src={image[0]?.url}
-                    />
+                    <Image style={{ maxWidth: '500px', maxHeight: '750px' }} alt={text} src={image[0]?.url} />
                   ) : (
                     <HStack wrap='wrap'>
                       {sortIndex(image)?.map((item) => (
@@ -130,7 +122,7 @@ export function RenderTextHide({ title, text, image, dotTitle, noMarginTop, tham
           ) : (
             <Divider />
           )}
-        </BoxFrame>
+        </motion.div>
       )}
     </Box>
   );
@@ -139,7 +131,7 @@ export function RenderTextHide({ title, text, image, dotTitle, noMarginTop, tham
 export function RenderTextArr({ title, arr, thamKhao }) {
   return (
     <Box my={6}>
-      <Text fontSize={19.5} fontWeight='bold' color='red'>
+      <Text id={title} fontSize={19.5} fontWeight='bold' color='red'>
         • {title}:{' '}
       </Text>
       {arr?.map((item, index) => (

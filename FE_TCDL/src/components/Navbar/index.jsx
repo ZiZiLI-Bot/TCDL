@@ -26,7 +26,7 @@ export default function Navbar() {
           <MdOutlineArrowBack size={30} style={{ padding: 3 }} />
         </Box>
       </Tooltip>
-      <SearchBar />
+      <SearchBar h='45px' />
     </Flex>
   );
 }
