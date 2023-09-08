@@ -22,7 +22,7 @@ services:
     ports:
       - '5000:5000'
     environment:
-      - VIRTUAL_HOST=tcdl.tuanhung.site
+      - VIRTUAL_HOST=tcdl.chuhung.com
       - VIRTUAL_PORT=5000
-      - LETSENCRYPT_HOST=tcdl.tuanhung.site
-      - VITE_BACKEND_URL = https://tcdl.tuanhung.site/api/;
+      - LETSENCRYPT_HOST=tcdl.chuhung.com
+      - VITE_BACKEND_URL = https://api.tcdl.chuhung.com/api/;
