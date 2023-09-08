@@ -19,6 +19,6 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=server-dependences /app/node_modules /app/node_modules
 COPY --from=server-builder /app/package.json /app/package.json
-# COPY --from=server-builder /app/.env /app/
+COPY --from=server-builder /app/.env /app/
 COPY --from=server-builder /app/dist /app/dist
 CMD [ "node", "--experimental-modules", "--es-module-specifier-resolution=node", "dist/index.js" ]

@@ -2,4 +2,3 @@
 **/dist
 .git
 npm-debug.log
-.env
